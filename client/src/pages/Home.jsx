@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../features/auth/authSlice";
 import { fetchPosts, createPost } from "../features/posts/postsSlice";
 import PostCard from "../components/PostCard";
 
 export default function Home() {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const { items, page, hasMore, loading, error } = useSelector((state) => state.posts);
+  const { items, page, hasMore, loading, error } = useSelector(
+    (state) => state.posts
+  );
   const [text, setText] = useState("");
 
   useEffect(() => {
@@ -23,16 +23,6 @@ export default function Home() {
 
   return (
     <div className="container" style={{ maxWidth: 640 }}>
-      <div className="d-flex justify-content-between align-items-center py-3">
-        <h4 className="m-0">Welcome, {user?.name} 👋</h4>
-        <button
-          className="btn btn-sm btn-outline-danger"
-          onClick={() => dispatch(logout())}
-        >
-          Logout
-        </button>
-      </div>
-
       <form onSubmit={handleSubmit} className="mb-4">
         <textarea
           className="form-control mb-2"

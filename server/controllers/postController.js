@@ -19,7 +19,12 @@ export const getPosts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
-    const filter = req.query.user ? { author: req.query.user } : {};
+    const filter = {};
+    if (req.query.user) filter.author = req.query.user;
+    if (req.query.q) {
+      const safe = req.query.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.text = new RegExp(safe, "i");
+    }
     const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)

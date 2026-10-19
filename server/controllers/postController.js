@@ -1,5 +1,6 @@
 import Post from "../models/Post.js";
 import Comment from "../models/Comment.js";
+import Notification from "../models/Notification.js";
 
 export const createPost = async (req, res) => {
   try {
@@ -61,6 +62,7 @@ export const deletePost = async (req, res) => {
       return res.status(403).json({ message: "Not allowed" });
     }
     await Comment.deleteMany({ post: post._id });
+    await Notification.deleteMany({ post: post._id });
     await post.deleteOne();
     res.json({ message: "Post deleted", id: req.params.id });
   } catch (error) {
@@ -78,6 +80,14 @@ export const toggleLike = async (req, res) => {
       post.likes = post.likes.filter((id) => id.toString() !== userId);
     } else {
       post.likes.push(req.user._id);
+      if (post.author.toString() !== userId) {
+        await Notification.create({
+          recipient: post.author,
+          sender: req.user._id,
+          type: "like",
+          post: post._id,
+        });
+      }
     }
     await post.save();
     res.json({ _id: post._id, likes: post.likes });
@@ -101,6 +111,14 @@ export const addComment = async (req, res) => {
     });
     post.commentsCount += 1;
     await post.save();
+    if (post.author.toString() !== req.user._id.toString()) {
+      await Notification.create({
+        recipient: post.author,
+        sender: req.user._id,
+        type: "comment",
+        post: post._id,
+      });
+    }
     await comment.populate("author", "name username avatar");
     res.status(201).json({ comment, commentsCount: post.commentsCount });
   } catch (error) {

@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../features/auth/authSlice";
 import { toggleTheme } from "../features/theme/themeSlice";
+import NotificationBell from "./NotificationBell";
+
 
 export default function Navbar() {
   const dispatch = useDispatch();
@@ -31,6 +33,7 @@ export default function Navbar() {
           />
         </form>
         <div className="d-flex gap-2 align-items-center">
+            <NotificationBell />
           <button
             className="btn btn-sm btn-outline-secondary"
             onClick={() => dispatch(toggleTheme())}

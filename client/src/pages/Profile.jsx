@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import API from "../api/axios";
 import PostCard from "../components/PostCard";
 
-const SERVER = "http://localhost:5000";
+const SERVER = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function Profile() {
   const { username } = useParams();

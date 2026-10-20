@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";  
+import path from "path";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 dotenv.config();
@@ -16,6 +17,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (req, res) => {
   res.json({ message: "API is running" });

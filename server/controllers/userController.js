@@ -58,3 +58,15 @@ export const searchUsers = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const uploadAvatarImage = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No image uploaded" });
+    const user = await User.findById(req.user._id);
+    user.avatar = `/uploads/${req.file.filename}`;
+    await user.save();
+    res.json({ avatar: user.avatar });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

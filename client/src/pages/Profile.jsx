@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import API from "../api/axios";
 import PostCard from "../components/PostCard";
@@ -92,6 +92,13 @@ export default function Profile() {
             <>
               <p>{profile.bio || "No bio yet."}</p>
               <small className="text-muted">{profile.postsCount} posts</small>
+                            {!isOwner && (
+                <div className="mt-3">
+                  <Link to={`/chat?user=${profile.username}`} className="btn btn-sm btn-primary">
+                    Message
+                  </Link>
+                </div>
+              )}
               {isOwner && (
                 <div className="mt-3">
                   <button

@@ -6,6 +6,7 @@ import { toggleTheme } from "../features/theme/themeSlice";
 import NotificationBell from "./NotificationBell";
 
 
+
 export default function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ export default function Navbar() {
           <Link to={`/profile/${user?.username}`} className="btn btn-sm btn-outline-primary">
             Profile
           </Link>
+            <Link to="/chat" className="btn btn-sm btn-outline-primary">Chat</Link> 
           <button
             className="btn btn-sm btn-outline-danger"
             onClick={() => dispatch(logout())}

@@ -6,6 +6,7 @@ import Profile from "./pages/Profile";
 import Search from "./pages/Search";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import Chat from "./pages/Chat";
 
 const Layout = ({ children }) => (
   <ProtectedRoute>
@@ -23,6 +24,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/chat" element={<Layout><Chat /></Layout>} />
     </Routes>
   );
 }

@@ -39,6 +39,18 @@ export const deletePost = createAsyncThunk(
   }
 );
 
+export const updatePost = createAsyncThunk(
+  "posts/update",
+  async ({ id, text }, { rejectWithValue }) => {
+    try {
+      const res = await API.put(`/posts/${id}`, { text });
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(errMsg(err, "Failed to update post"));
+    }
+  }
+);
+
 export const toggleLike = createAsyncThunk(
   "posts/like",
   async (id, { rejectWithValue }) => {
@@ -101,6 +113,10 @@ const postsSlice = createSlice({
       })
       .addCase(deletePost.fulfilled, (state, action) => {
         state.items = state.items.filter((p) => p._id !== action.payload);
+      })
+            .addCase(updatePost.fulfilled, (state, action) => {
+        const i = state.items.findIndex((p) => p._id === action.payload._id);
+        if (i !== -1) state.items[i] = action.payload;
       })
       .addCase(toggleLike.fulfilled, (state, action) => {
         const post = state.items.find((p) => p._id === action.payload._id);

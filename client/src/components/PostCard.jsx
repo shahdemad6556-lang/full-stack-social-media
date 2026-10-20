@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import API from "../api/axios";
 import {
   toggleLike,
   optimisticLike,
   deletePost,
+  updatePost,
   addComment,
 } from "../features/posts/postsSlice";
 
@@ -14,6 +16,8 @@ export default function PostCard({ post }) {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [text, setText] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(post.text);
 
   const liked = post.likes.includes(user._id);
   const isOwner = post.author?._id === user._id;
@@ -41,26 +45,66 @@ export default function PostCard({ post }) {
     }
   };
 
+  const saveEdit = async () => {
+    if (!editText.trim()) return;
+    const result = await dispatch(updatePost({ id: post._id, text: editText }));
+    if (updatePost.fulfilled.match(result)) setEditing(false);
+  };
+
   return (
     <div className="card mb-3">
       <div className="card-body">
         <div className="d-flex justify-content-between">
           <div>
-            <strong>{post.author?.name}</strong>{" "}
+            <Link to={`/profile/${post.author?.username}`} className="text-decoration-none text-body">
+              <strong>{post.author?.name}</strong>
+            </Link>{" "}
             <span className="text-muted">@{post.author?.username}</span>
           </div>
           {isOwner && (
-            <button
-              className="btn btn-sm btn-outline-danger"
-              onClick={() => dispatch(deletePost(post._id))}
-            >
-              Delete
-            </button>
+            <div className="d-flex gap-1">
+              <button
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => {
+                  setEditText(post.text);
+                  setEditing(!editing);
+                }}
+              >
+                Edit
+              </button>
+              <button
+                className="btn btn-sm btn-outline-danger"
+                onClick={() => dispatch(deletePost(post._id))}
+              >
+                Delete
+              </button>
+            </div>
           )}
         </div>
-        <p className="mt-2 mb-2">{post.text}</p>
+
+        {editing ? (
+          <div className="mt-2">
+            <textarea
+              className="form-control mb-2"
+              rows="3"
+              maxLength={500}
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+            />
+            <button className="btn btn-sm btn-primary me-2" onClick={saveEdit}>
+              Save
+            </button>
+            <button className="btn btn-sm btn-secondary" onClick={() => setEditing(false)}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <p className="mt-2 mb-2">{post.text}</p>
+        )}
+
         <small className="text-muted">
           {new Date(post.createdAt).toLocaleString()}
+          {post.updatedAt !== post.createdAt && " (edited)"}
         </small>
         <div className="mt-3 d-flex gap-2">
           <button

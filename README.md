@@ -5,8 +5,8 @@ Users can register, share posts with text and images, use #tags, like and commen
 
 ## Live Demo
 
-- **Frontend:** YOUR-FRONTEND-LINK
-- **Backend API:** YOUR-BACKEND-LINK
+- **Frontend:** https://full-stack-social-media-lm83.vercel.app
+- **Backend API:** https://full-stack-social-media-one.vercel.app
 
 > Note: images uploaded on the hosted version may not persist, because the hosting platform has no permanent disk. All other data is stored in MongoDB Atlas. On the first visit the app may take a few seconds to wake up.
 

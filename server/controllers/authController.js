@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 const userResponse = (user) => ({
   _id: user._id,
@@ -33,13 +34,19 @@ export const register = async (req, res) => {
         .json({ message: "Email or username already in use" });
     }
 
-    const user = await User.create({ name, username, email, password });
+        const user = await User.create({ name, username, email, password });
+
+    await sendEmail({
+      to: user.email,
+      subject: "Welcome to Social!",
+      html: `<h2>Welcome, ${user.name}!</h2><p>Your account @${user.username} is ready. Start posting and connecting.</p>`,
+    });
+
     res.status(201).json(userResponse(user));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;

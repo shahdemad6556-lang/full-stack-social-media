@@ -9,6 +9,7 @@ export default function Home() {
     (state) => state.posts
   );
   const [text, setText] = useState("");
+  const [file, setFile] = useState(null);
 
   useEffect(() => {
     dispatch(fetchPosts(1));
@@ -16,9 +17,14 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
-    await dispatch(createPost(text));
-    setText("");
+    if (!text.trim() && !file) return;
+    const form = e.target;
+    const result = await dispatch(createPost({ text, file }));
+    if (createPost.fulfilled.match(result)) {
+      setText("");
+      setFile(null);
+      form.reset();
+    }
   };
 
   return (
@@ -28,9 +34,15 @@ export default function Home() {
           className="form-control mb-2"
           rows="3"
           maxLength={500}
-          placeholder="What's on your mind?"
+          placeholder="What's on your mind? Use #tags"
           value={text}
           onChange={(e) => setText(e.target.value)}
+        />
+        <input
+          type="file"
+          accept="image/*"
+          className="form-control mb-2"
+          onChange={(e) => setFile(e.target.files[0] || null)}
         />
         <button className="btn btn-primary">Post</button>
       </form>

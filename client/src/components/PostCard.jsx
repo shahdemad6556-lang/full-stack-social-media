@@ -10,6 +10,8 @@ import {
   addComment,
 } from "../features/posts/postsSlice";
 
+const SERVER = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 export default function PostCard({ post }) {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
@@ -46,7 +48,6 @@ export default function PostCard({ post }) {
   };
 
   const saveEdit = async () => {
-    if (!editText.trim()) return;
     const result = await dispatch(updatePost({ id: post._id, text: editText }));
     if (updatePost.fulfilled.match(result)) setEditing(false);
   };
@@ -56,7 +57,10 @@ export default function PostCard({ post }) {
       <div className="card-body">
         <div className="d-flex justify-content-between">
           <div>
-            <Link to={`/profile/${post.author?.username}`} className="text-decoration-none text-body">
+            <Link
+              to={`/profile/${post.author?.username}`}
+              className="text-decoration-none text-body"
+            >
               <strong>{post.author?.name}</strong>
             </Link>{" "}
             <span className="text-muted">@{post.author?.username}</span>
@@ -94,15 +98,41 @@ export default function PostCard({ post }) {
             <button className="btn btn-sm btn-primary me-2" onClick={saveEdit}>
               Save
             </button>
-            <button className="btn btn-sm btn-secondary" onClick={() => setEditing(false)}>
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => setEditing(false)}
+            >
               Cancel
             </button>
           </div>
         ) : (
-          <p className="mt-2 mb-2">{post.text}</p>
+          <>
+            {post.text && <p className="mt-2 mb-2">{post.text}</p>}
+            {post.image && (
+              <img
+                src={`${SERVER}${post.image}`}
+                alt="post"
+                className="img-fluid rounded mb-2"
+                style={{ maxHeight: 400 }}
+              />
+            )}
+            {post.tags?.length > 0 && (
+              <div className="mb-2">
+                {post.tags.map((t) => (
+                  <Link
+                    key={t}
+                    to={`/search?q=${encodeURIComponent("#" + t)}`}
+                    className="me-2"
+                  >
+                    #{t}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
-        <small className="text-muted">
+        <small className="text-muted d-block">
           {new Date(post.createdAt).toLocaleString()}
           {post.updatedAt !== post.createdAt && " (edited)"}
         </small>

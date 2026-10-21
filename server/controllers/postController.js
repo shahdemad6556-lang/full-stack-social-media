@@ -2,13 +2,25 @@ import Post from "../models/Post.js";
 import Comment from "../models/Comment.js";
 import Notification from "../models/Notification.js";
 
+const extractTags = (text) => [
+  ...new Set(
+    (text.match(/#[\p{L}\p{N}_]+/gu) || []).map((t) => t.slice(1).toLowerCase())
+  ),
+];
+
 export const createPost = async (req, res) => {
   try {
-    const { text } = req.body;
-    if (!text || !text.trim()) {
-      return res.status(400).json({ message: "Post text is required" });
+    const text = (req.body.text || "").trim();
+    const image = req.file ? `/uploads/${req.file.filename}` : "";
+    if (!text && !image) {
+      return res.status(400).json({ message: "Add some text or an image" });
     }
-    const post = await Post.create({ author: req.user._id, text });
+    const post = await Post.create({
+      author: req.user._id,
+      text,
+      image,
+      tags: extractTags(text),
+    });
     await post.populate("author", "name username avatar");
     res.status(201).json(post);
   } catch (error) {
@@ -23,8 +35,16 @@ export const getPosts = async (req, res) => {
     const filter = {};
     if (req.query.user) filter.author = req.query.user;
     if (req.query.q) {
-      const safe = req.query.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      filter.text = new RegExp(safe, "i");
+      const raw = req.query.q.trim();
+      const safe = raw.replace(/^#/, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (raw.startsWith("#")) {
+        filter.tags = safe.toLowerCase();
+      } else {
+        filter.$or = [
+          { text: new RegExp(safe, "i") },
+          { tags: safe.toLowerCase() },
+        ];
+      }
     }
     const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
@@ -45,7 +65,10 @@ export const updatePost = async (req, res) => {
     if (post.author.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: "Not allowed" });
     }
-    post.text = req.body.text || post.text;
+    if (typeof req.body.text === "string") {
+      post.text = req.body.text;
+      post.tags = extractTags(post.text);
+    }
     await post.save();
     await post.populate("author", "name username avatar");
     res.json(post);

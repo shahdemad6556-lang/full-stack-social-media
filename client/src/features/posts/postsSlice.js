@@ -17,24 +17,15 @@ export const fetchPosts = createAsyncThunk(
 
 export const createPost = createAsyncThunk(
   "posts/create",
-  async (text, { rejectWithValue }) => {
+  async ({ text, file }, { rejectWithValue }) => {
     try {
-      const res = await API.post("/posts", { text });
+      const data = new FormData();
+      data.append("text", text);
+      if (file) data.append("image", file);
+      const res = await API.post("/posts", data);
       return res.data;
     } catch (err) {
       return rejectWithValue(errMsg(err, "Failed to create post"));
-    }
-  }
-);
-
-export const deletePost = createAsyncThunk(
-  "posts/delete",
-  async (id, { rejectWithValue }) => {
-    try {
-      await API.delete(`/posts/${id}`);
-      return id;
-    } catch (err) {
-      return rejectWithValue(errMsg(err, "Failed to delete post"));
     }
   }
 );
@@ -47,6 +38,18 @@ export const updatePost = createAsyncThunk(
       return res.data;
     } catch (err) {
       return rejectWithValue(errMsg(err, "Failed to update post"));
+    }
+  }
+);
+
+export const deletePost = createAsyncThunk(
+  "posts/delete",
+  async (id, { rejectWithValue }) => {
+    try {
+      await API.delete(`/posts/${id}`);
+      return id;
+    } catch (err) {
+      return rejectWithValue(errMsg(err, "Failed to delete post"));
     }
   }
 );
@@ -79,7 +82,6 @@ const postsSlice = createSlice({
   name: "posts",
   initialState: { items: [], page: 1, hasMore: true, loading: false, error: null },
   reducers: {
-    // optimistic like: update the UI immediately
     optimisticLike: (state, action) => {
       const { id, userId } = action.payload;
       const post = state.items.find((p) => p._id === id);
@@ -109,14 +111,18 @@ const postsSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(createPost.fulfilled, (state, action) => {
+        state.error = null;
         state.items.unshift(action.payload);
+      })
+      .addCase(createPost.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        const i = state.items.findIndex((p) => p._id === action.payload._id);
+        if (i !== -1) state.items[i] = action.payload;
       })
       .addCase(deletePost.fulfilled, (state, action) => {
         state.items = state.items.filter((p) => p._id !== action.payload);
-      })
-            .addCase(updatePost.fulfilled, (state, action) => {
-        const i = state.items.findIndex((p) => p._id === action.payload._id);
-        if (i !== -1) state.items[i] = action.payload;
       })
       .addCase(toggleLike.fulfilled, (state, action) => {
         const post = state.items.find((p) => p._id === action.payload._id);
